@@ -855,13 +855,20 @@ struct MapHomeView: View {
         do {
             try session.sendProviderMessage(request) { response in
                 DispatchQueue.main.async {
-                    guard let data = response, data.count == 17 else {
+                    guard let data = response else {
+                        DiagLog.add("[IPC] sendProviderMessage callback returned nil response")
+                        completion(nil)
+                        return
+                    }
+                    guard data.count == 17 else {
+                        DiagLog.add("[IPC] sendProviderMessage returned invalid response length: \(data.count)")
                         completion(nil)
                         return
                     }
                     let enabled = data[0] != 0
                     let lat = data.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 1, as: Double.self) }
                     let lon = data.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: 9, as: Double.self) }
+                    DiagLog.add("[IPC] sendProviderMessage response valid enabled=\(enabled) lat=\(lat) lon=\(lon)")
                     completion((lat: lat, lon: lon, enabled: enabled))
                 }
             }
