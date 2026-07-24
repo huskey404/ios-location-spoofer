@@ -50,7 +50,7 @@ struct ContentView: View {
             proto.providerBundleIdentifier = "com.whitemirror.location-spoofer.tunnel"
             proto.serverAddress = "127.0.0.1"
             manager.protocolConfiguration = proto
-            manager.localizedDescription = "任意门"
+            manager.localizedDescription = "AnyDoor"
             manager.isEnabled = true
 
             manager.saveToPreferences { error in

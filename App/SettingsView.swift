@@ -11,15 +11,15 @@ struct SettingsView: View {
         NavigationView {
             List {
                 // 关于
-                Section("关于") {
+                Section("About") {
                     HStack {
-                        Text("任意门")
+                        Text("AnyDoor")
                         Spacer()
                         Text("Build \(buildNumber)")
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("版本")
+                        Text("Version")
                         Spacer()
                         Text(appVersion)
                             .foregroundColor(.secondary)
@@ -27,28 +27,28 @@ struct SettingsView: View {
                 }
 
                 // 诊断信息
-                Section("诊断信息(发给客服时使用)") {
-                    diagnosticRow(label: "VPN 状态", value: vpnStatusText)
-                    diagnosticRow(label: "证书状态", value: certificateStatusText)
-                    diagnosticRow(label: "当前虚拟定位", value: currentLocationText)
-                    diagnosticRow(label: "当前坐标", value: currentCoordinatesText)
-                    diagnosticRow(label: "首次配置", value: setupCompletedText)
+                Section("Diagnostics (send to support)") {
+                    diagnosticRow(label: "VPN Status", value: vpnStatusText)
+                    diagnosticRow(label: "Certificate Status", value: certificateStatusText)
+                    diagnosticRow(label: "Current Spoofed Location", value: currentLocationText)
+                    diagnosticRow(label: "Current Coordinates", value: currentCoordinatesText)
+                    diagnosticRow(label: "Setup Completed", value: setupCompletedText)
 
                     Button(action: { copyDiagnostic() }) {
                         HStack {
                             Image(systemName: "doc.on.doc")
-                            Text(showCopiedToast ? "已复制" : "复制诊断信息(含流程日志)")
+                            Text(showCopiedToast ? "Copied" : "Copy diagnostics (including logs)")
                             Spacer()
                         }
                         .foregroundColor(showCopiedToast ? .green : .blue)
                     }
                 }
 
-                // 流程日志
+                // Process log
                 Section(header: HStack {
-                    Text("流程日志(最近 \(diagLog.entries.count) 条)")
+                    Text("Logs (recent \(diagLog.entries.count))")
                     Spacer()
-                    Button("清空") { diagLog.clear() }
+                    Button("Clear") { diagLog.clear() }
                         .font(.caption)
                         .foregroundColor(.red)
                         .disabled(diagLog.entries.isEmpty)
@@ -56,13 +56,13 @@ struct SettingsView: View {
                     Button(action: { queryGoLogsViaIPC() }) {
                         HStack {
                             Image(systemName: "arrow.down.doc")
-                            Text("拉取 Go 代理日志(IPC)")
+                            Text("Fetch Go proxy logs (IPC)")
                             Spacer()
                         }
                         .foregroundColor(.blue)
                     }
                     if diagLog.entries.isEmpty {
-                        Text("暂无日志。操作一次「设为定位」后回来查看。")
+                        Text("No logs yet. Perform Set Location once and come back to view them.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     } else {
@@ -77,27 +77,27 @@ struct SettingsView: View {
                 }
 
                 // 危险操作
-                Section("高级") {
+                Section("Advanced") {
                     Button(role: .destructive, action: { showResetConfirm = true }) {
                         HStack {
                             Image(systemName: "arrow.counterclockwise")
-                            Text("重置 App(清除所有配置和收藏)")
+                            Text("Reset App (clear all settings and favorites)")
                         }
                     }
                 }
             }
-            .navigationTitle("设置")
+            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
-            .alert("确认重置 App?", isPresented: $showResetConfirm) {
-                Button("取消", role: .cancel) { }
-                Button("重置", role: .destructive) { resetApp() }
+            .alert("Confirm app reset?", isPresented: $showResetConfirm) {
+                Button("Cancel", role: .cancel) { }
+                Button("Reset", role: .destructive) { resetApp() }
             } message: {
-                Text("将清除所有配置、收藏、证书状态。\n\n重置后需要重新走一次首次配置流程。")
+                Text("This will clear all settings, favorites, and certificate status.\n\nAfter reset, you will need to complete the initial setup again.")
             }
         }
     }
@@ -116,25 +116,25 @@ struct SettingsView: View {
     }
 
     private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "未知"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
     }
 
     private var buildNumber: String {
-        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知"
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
     }
 
     private var vpnStatusText: String {
         guard let manager = ContentView.vpnManager else {
-            return "未初始化"
+            return "Not initialized"
         }
         switch manager.connection.status {
-        case .invalid:        return "无效"
-        case .disconnected:   return "未连接"
-        case .connecting:     return "连接中"
-        case .connected:      return "已连接"
-        case .reasserting:    return "重新连接中"
-        case .disconnecting:  return "断开中"
-        @unknown default:     return "未知"
+        case .invalid:        return "Invalid"
+        case .disconnected:   return "Disconnected"
+        case .connecting:     return "Connecting"
+        case .connected:      return "Connected"
+        case .reasserting:    return "Reasserting"
+        case .disconnecting:  return "Disconnecting"
+        @unknown default:     return "Unknown"
         }
     }
 
@@ -142,44 +142,44 @@ struct SettingsView: View {
         let downloaded = UserDefaults.standard.bool(forKey: "certDownloaded")
         let installed = UserDefaults.standard.bool(forKey: "certInstalled")
         let trusted = UserDefaults.standard.bool(forKey: "certTrusted")
-        if trusted { return "已信任" }
-        if installed { return "已安装未信任" }
-        if downloaded { return "已下载未安装" }
-        return "未配置"
+        if trusted { return "Trusted" }
+        if installed { return "Installed, not trusted" }
+        if downloaded { return "Downloaded, not installed" }
+        return "Not configured"
     }
 
     private var currentLocationText: String {
-        UserDefaults.standard.string(forKey: "currentLocationName") ?? "无"
+        UserDefaults.standard.string(forKey: "currentLocationName") ?? "None"
     }
 
     private var currentCoordinatesText: String {
         guard let coords = LocationConfiguration.shared.currentCoordinates else {
-            return "无"
+            return "None"
         }
         return String(format: "%.6f, %.6f", coords.latitude, coords.longitude)
     }
 
     private var setupCompletedText: String {
-        UserDefaults.standard.bool(forKey: "firstSetupCompleted") ? "已完成" : "未完成"
+        UserDefaults.standard.bool(forKey: "firstSetupCompleted") ? "Completed" : "Not completed"
     }
 
     private func copyDiagnostic() {
         let logBlock = diagLog.entries.isEmpty
-            ? "(无日志)"
+            ? "(No logs)"
             : diagLog.entries.map { $0.formatted }.joined(separator: "\n")
 
         let info = """
-        任意门诊断信息
+        AnyDoor diagnostics
         ─────────────
-        App 版本:\(appVersion)
-        Build:\(buildNumber)
-        VPN 状态:\(vpnStatusText)
-        证书状态:\(certificateStatusText)
-        当前虚拟定位:\(currentLocationText)
-        当前坐标:\(currentCoordinatesText)
-        首次配置:\(setupCompletedText)
+        App version: \(appVersion)
+        Build: \(buildNumber)
+        VPN status: \(vpnStatusText)
+        Certificate status: \(certificateStatusText)
+        Current spoofed location: \(currentLocationText)
+        Current coordinates: \(currentCoordinatesText)
+        Initial setup: \(setupCompletedText)
 
-        ─── 流程日志 ───
+        ─── Logs ───
         \(logBlock)
         """
         UIPasteboard.general.string = info

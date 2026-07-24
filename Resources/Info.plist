@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>任意门</string>
+    <string>AnyDoor</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -49,7 +49,7 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>App 启动时定位你当前所在区域,以便地图初始显示在你周围。不会持续追踪。</string>
+	<string>The app uses your current location once at launch to center the map on your area. It does not track you continuously.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

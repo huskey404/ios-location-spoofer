@@ -133,7 +133,7 @@ struct MapHomeView: View {
             MapReader { proxy in
                 Map(position: $cameraPosition, selection: $mapSelection) {
                     if let coord = selectedCoordinate {
-                        Marker("目标位置", coordinate: coord)
+                        Marker("Target location", coordinate: coord)
                             .tint(.red)
                     }
                     UserAnnotation()
@@ -189,13 +189,13 @@ struct MapHomeView: View {
         .sheet(isPresented: $showRestartLocationGuide) {
             restartLocationGuide
         }
-        .alert("关闭虚拟定位", isPresented: $showDisableGuide) {
-            Button("取消", role: .cancel) { }
-            Button("关闭", role: .destructive) {
+        .alert("Disable virtual location", isPresented: $showDisableGuide) {
+            Button("Cancel", role: .cancel) { }
+            Button("Disable", role: .destructive) {
                 disableSpoofing()
             }
         } message: {
-            Text("将关闭虚拟定位。关闭后请重启一次定位服务,真实定位才会恢复。")
+            Text("This will disable virtual location. After disabling, restart Location Services once for real location to return.")
         }
         .sheet(isPresented: $showRestartPhoneGuide) {
             disableRestartGuide
@@ -309,7 +309,7 @@ struct MapHomeView: View {
 
             if case .on = spoofingState {
                 Button(action: { showDisableGuide = true }) {
-                    Text("关闭定位")
+                    Text("Disable location")
                         .font(.body)
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
@@ -320,7 +320,7 @@ struct MapHomeView: View {
                 }
             } else if case .failed = spoofingState {
                 Button(action: { spoofingState = .off }) {
-                    Text("重试")
+                    Text("Retry")
                         .font(.body)
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
@@ -337,15 +337,15 @@ struct MapHomeView: View {
     // 状态文案(MapHomeView 内重写,不动 SpoofingState.swift)
     private var statusPrimaryText: String {
         switch spoofingState {
-        case .off: return "选择位置开始虚拟定位"
-        case .pending(_, let isClosing): return isClosing ? "正在关闭..." : "正在生效中..."
-        case .on(let name): return "已开启:\(name)"
-        case .failed(let reason): return "失败:\(reason)"
+        case .off: return "Select a location to start virtual location"
+        case .pending(_, let isClosing): return isClosing ? "Disabling..." : "Activating..."
+        case .on(let name): return "Enabled: \(name)"
+        case .failed(let reason): return "Failed: \(reason)"
         }
     }
 
     private var statusSubText: String? {
-        if case .pending = spoofingState { return "请重启定位服务" }
+        if case .pending = spoofingState { return "Please restart Location Services" }
         return nil
     }
     private var indicatorColor: Color {
@@ -363,7 +363,7 @@ struct MapHomeView: View {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                TextField("搜索地点或点击地图选择", text: $searchText)
+                TextField("Search location or tap the map", text: $searchText)
                     .textFieldStyle(.plain)
                     .submitLabel(.search)
                     .onSubmit { performSearch() }
@@ -408,7 +408,7 @@ struct MapHomeView: View {
                     .foregroundColor(.red)
                     .font(.title2)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(selectedLocationName ?? "未知位置")
+                    Text(selectedLocationName ?? "Unknown location")
                         .font(.headline)
                     if let coord = selectedCoordinate {
                         Text(String(format: "%.4f, %.4f", coord.latitude, coord.longitude))
@@ -425,7 +425,7 @@ struct MapHomeView: View {
                 Button(action: { addCurrentSelectionToFavorites() }) {
                     HStack {
                         Image(systemName: justFavorited ? "checkmark.circle.fill" : "star")
-                        Text(justFavorited ? "已收藏" : "收藏")
+                        Text(justFavorited ? "Favorited" : "Favorite")
                             .fontWeight(justFavorited ? .semibold : .regular)
                     }
                     .frame(maxWidth: .infinity)
@@ -437,7 +437,7 @@ struct MapHomeView: View {
                 }
                 .disabled(justFavorited)
                 Button(action: { setAsLocation() }) {
-                    Text(isSpoofing ? "正在生效中..." : "设为定位")
+                    Text(isSpoofing ? "Activating..." : "Set as location")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -453,25 +453,25 @@ struct MapHomeView: View {
 
     private var restartLocationGuide: some View {
         VStack(spacing: 20) {
-            Text("最后一步")
+            Text("Final step")
                 .font(.title2).fontWeight(.bold)
-            Text("请关闭再打开定位服务")
+            Text("Please turn Location Services off and on again")
                 .font(.title3)
             VStack(alignment: .leading, spacing: 12) {
-                Text("① 打开 iPhone「设置」").font(.body)
-                Text("② 点击「隐私与安全性」").font(.body)
-                Text("③ 点击「定位服务」").font(.body)
-                Text("④ 关闭「定位服务」开关").font(.body)
-                Text("⑤ 等待 3 秒").font(.body).foregroundColor(.red)
-                Text("⑥ 重新打开「定位服务」开关").font(.body)
+                Text("① Open Settings on your iPhone").font(.body)
+                Text("② Tap Privacy & Security").font(.body)
+                Text("③ Tap Location Services").font(.body)
+                Text("④ Turn Location Services off").font(.body)
+                Text("⑤ Wait 3 seconds").font(.body).foregroundColor(.red)
+                Text("⑥ Turn Location Services on again").font(.body)
             }
             .padding()
             Spacer()
-            Button("我已完成") {
+            Button("I have finished") {
                 showRestartLocationGuide = false
                 // pending → on
                 let name = UserDefaults.standard.string(forKey: "currentLocationName") ?? ""
-                DiagLog.add("用户点【我已完成】:name=\(name),状态置 on,即将关 VPN")
+                DiagLog.add("User tapped done: name=\(name), state set to on, closing VPN")
                 if !name.isEmpty {
                     spoofingState = .on(name: name)
                     // 镜头移到伪装位置,用户直观看到"已生效"
@@ -501,24 +501,24 @@ struct MapHomeView: View {
 
     private var disableRestartGuide: some View {
         VStack(spacing: 20) {
-            Text("已关闭虚拟定位")
+            Text("Virtual location disabled")
                 .font(.title2).fontWeight(.bold)
-            Text("最后一步:重启定位服务,真实定位才会恢复")
+            Text("Final step: restart Location Services for real location to resume")
                 .font(.title3)
                 .foregroundColor(.secondary)
             VStack(alignment: .leading, spacing: 12) {
-                Text("请按以下步骤操作:")
+                Text("Please follow these steps:")
                     .font(.body)
-                Text("① 打开 iPhone「设置」").font(.body)
-                Text("② 点击「隐私与安全性」").font(.body)
-                Text("③ 点击「定位服务」").font(.body)
-                Text("④ 关闭「定位服务」开关").font(.body)
-                Text("⑤ 等待 3 秒").font(.body).foregroundColor(.red)
-                Text("⑥ 重新打开「定位服务」开关").font(.body)
+                Text("① Open Settings on your iPhone").font(.body)
+                Text("② Tap Privacy & Security").font(.body)
+                Text("③ Tap Location Services").font(.body)
+                Text("④ Turn Location Services off").font(.body)
+                Text("⑤ Wait 3 seconds").font(.body).foregroundColor(.red)
+                Text("⑥ Turn Location Services on again").font(.body)
             }
             .padding()
             Spacer()
-            Button("我已完成") {
+            Button("I have finished") {
                 showRestartPhoneGuide = false
                 spoofingState = .off
             }
@@ -537,7 +537,7 @@ struct MapHomeView: View {
             List {
                 // 最近使用
                 if !recentLocations.isEmpty {
-                    Section("最近使用") {
+                    Section("Recent") {
                         ForEach(recentLocations) { saved in
                             Button(action: { selectFavorite(saved) }) {
                                 favoriteRow(saved: saved, iconName: "clock", iconColor: .orange)
@@ -547,9 +547,9 @@ struct MapHomeView: View {
                 }
 
                 // 我的收藏
-                Section("我的收藏") {
+                Section("Favorites") {
                     if savedLocations.isEmpty {
-                        Text("还没有收藏的位置")
+                        Text("No favorite locations yet")
                             .foregroundColor(.secondary)
                     } else {
                         ForEach(savedLocations) { saved in
@@ -560,18 +560,18 @@ struct MapHomeView: View {
                                 Button(role: .destructive) {
                                     deleteFavorite(saved)
                                 } label: {
-                                    Label("删除", systemImage: "trash")
+                                    Label("Delete", systemImage: "trash")
                                 }
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("收藏的位置")
+            .navigationTitle("Saved Locations")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") { showFavoritesSheet = false }
+                    Button("Done") { showFavoritesSheet = false }
                 }
             }
         }
@@ -608,7 +608,7 @@ struct MapHomeView: View {
                     .compactMap { $0 }
                     .joined(separator: ", ")
                 DispatchQueue.main.async {
-                    self.selectedLocationName = name.isEmpty ? "未知位置" : name
+                    self.selectedLocationName = name.isEmpty ? "Unknown location" : name
                 }
             }
         }
@@ -630,9 +630,9 @@ struct MapHomeView: View {
                 let mapItem = try await MKMapItemRequest(feature: feature).mapItem
                 applyMapItem(mapItem)
             } catch {
-                // 兜底:直接用 feature 自带字段
+                // Fallback: use feature fields directly
                 applySelectedLocation(
-                    name: feature.title ?? "未知地点",
+                    name: feature.title ?? "Unknown place",
                     coordinate: feature.coordinate
                 )
             }
@@ -641,7 +641,7 @@ struct MapHomeView: View {
 
     private func applyMapItem(_ mapItem: MKMapItem) {
         applySelectedLocation(
-            name: mapItem.name ?? "未知地点",
+            name: mapItem.name ?? "Unknown place",
             coordinate: mapItem.placemark.coordinate
         )
     }
@@ -706,7 +706,7 @@ struct MapHomeView: View {
 
     private func setAsLocation() {
         guard let coord = selectedCoordinate else { return }
-        let name = selectedLocationName ?? "未知位置"
+        let name = selectedLocationName ?? "Unknown location"
         spoofedDisplayCoord = coord  // GCJ-02 显示坐标,用户点"我已完成"后地图移到这里
         DiagLog.add("设为定位入口:坐标=(\(coord.latitude), \(coord.longitude)) 名称=\(name) vpnConnected=\(vpnConnected) → 走\(vpnConnected ? "热切重启" : "冷启动")分支")
 
@@ -944,12 +944,12 @@ struct MapHomeView: View {
                                         completion(true, nil)
                                     } else {
                                         DiagLog.add("[冷启动] 坐标确认超时,回调 completion(false)")
-                                        completion(false, "Go 代理已就绪但坐标确认超时,请重试")
+                                        completion(false, "Go proxy ready but coordinate confirmation timed out. Please retry.")
                                     }
                                 }
                             } else {
                                 DiagLog.add("[冷启动] Go TCP 就绪探测超时,回调 completion(false)")
-                                completion(false, "Go 代理就绪超时,请重试")
+                                completion(false, "Go proxy readiness timed out. Please retry.")
                             }
                         }
                     } else {
@@ -1016,7 +1016,7 @@ struct MapHomeView: View {
         DiagLog.add("[热切] 进入 restartVPNForNewCoordinates")
         guard let manager = ContentView.vpnManager else {
             DiagLog.add("[热切] 失败:vpnManager 为 nil")
-            spoofingState = .failed(reason: "VPN 配置未初始化,请重启 App")
+            spoofingState = .failed(reason: "VPN configuration not initialized. Please restart the app.")
             isSpoofing = false
             return
         }
@@ -1044,13 +1044,13 @@ struct MapHomeView: View {
                                 }
                             } else {
                                 DiagLog.add("[热切] 坐标确认超时,置 failed")
-                                spoofingState = .failed(reason: "坐标确认超时,请重试")
+                                spoofingState = .failed(reason: "Coordinate confirmation timed out. Please retry.")
                                 isSpoofing = false
                             }
                         }
                     } else {
                         DiagLog.add("[热切] Go TCP 就绪探测超时,置 failed")
-                        spoofingState = .failed(reason: "Go 代理就绪超时,请重试")
+                        spoofingState = .failed(reason: "Go proxy readiness timed out. Please retry.")
                         isSpoofing = false
                     }
                 }

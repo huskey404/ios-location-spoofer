@@ -23,10 +23,10 @@ enum SetupStep: Int, CaseIterable {
     var title: String {
         switch self {
         case .welcome: return ""
-        case .vpn: return "授权 VPN"
-        case .cert: return "下载证书"
-        case .install: return "安装描述文件"
-        case .trust: return "信任证书"
+        case .vpn: return "VPN Authorization"
+        case .cert: return "Download Certificate"
+        case .install: return "Install Profile"
+        case .trust: return "Trust Certificate"
         case .done: return ""
         }
     }
@@ -57,22 +57,22 @@ struct FirstSetupView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: currentStep)
-        .alert("出错了", isPresented: .constant(errorMessage != nil), presenting: errorMessage) { _ in
-            Button("好的") { errorMessage = nil }
+        .alert("Error", isPresented: .constant(errorMessage != nil), presenting: errorMessage) { _ in
+            Button("OK") { errorMessage = nil }
         } message: { msg in
             Text(msg)
         }
-        .alert("确认描述文件已安装", isPresented: $showInstallConfirm) {
-            Button("我已安装") { currentStep = .trust }
-            Button("去安装", role: .cancel) { }
+        .alert("Confirm profile installed", isPresented: $showInstallConfirm) {
+            Button("Installed") { currentStep = .trust }
+            Button("Install", role: .cancel) { }
         } message: {
-            Text("请确认你已在「设置→通用→VPN与设备管理」中完成了描述文件的安装。如果还没安装,请先去系统设置完成安装再点确认。")
+            Text("Please confirm that you have installed the profile in Settings → General → VPN & Device Management. If not, install it first, then confirm.")
         }
-        .alert("确认证书已信任", isPresented: $showTrustConfirm) {
-            Button("已完成信任") { confirmTrust() }
-            Button("去设置", role: .cancel) { }
+        .alert("Confirm certificate trust", isPresented: $showTrustConfirm) {
+            Button("Trusted") { confirmTrust() }
+            Button("Go to Settings", role: .cancel) { }
         } message: {
-            Text("请确认你已在「设置→通用→关于本机→证书信任设置」中打开了「Location Spoofer CA」的开关。如果还没信任,请先去系统设置完成再点确认。")
+            Text("Please confirm that you have enabled the Location Spoofer CA trust setting in Settings → General → About → Certificate Trust Settings. If not, trust it first, then confirm.")
         }
     }
 
@@ -86,17 +86,17 @@ struct FirstSetupView: View {
                 .font(.system(size: 72))
                 .foregroundColor(.blue)
 
-            Text("欢迎使用任意门")
+            Text("Welcome to AnyDoor")
                 .font(.largeTitle).fontWeight(.bold)
 
-            Text("3 步完成配置,从此一键改定位")
+            Text("Finish setup in 3 steps and change your location with one tap.")
                 .font(.title3)
                 .foregroundColor(.secondary)
 
             Spacer()
 
             Button(action: { currentStep = .vpn }) {
-                Text("开始配置")
+                Text("Start Setup")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -106,7 +106,7 @@ struct FirstSetupView: View {
             }
             .padding(.horizontal, 32)
 
-            Text("配置过程会请求 VPN 权限和证书安装\n这是实现定位修改的必要步骤")
+            Text("The setup process requires VPN permission and certificate installation. These are necessary steps to change your location.")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -166,7 +166,7 @@ struct FirstSetupView: View {
         switch currentStep {
         case .vpn:
             VStack(spacing: 12) {
-                Text("请在系统弹窗中点击「允许」并输入手机密码")
+                Text("In the system prompt, tap Allow and enter your device passcode.")
                     .font(.body)
                     .multilineTextAlignment(.center)
                 Image(systemName: "lock.shield.fill")
@@ -176,40 +176,40 @@ struct FirstSetupView: View {
             }
         case .cert:
             VStack(spacing: 12) {
-                Text("点击下方按钮,Safari 会自动弹出证书安装提示。")
+                Text("Tap the button below. Safari will open and prompt you to install the certificate.")
                     .font(.body)
                     .multilineTextAlignment(.center)
-                Text("请按系统提示完成证书下载。")
+                Text("Follow the system prompts to download the certificate.")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                Text("如果 Safari 提示证书已存在,或直接跳转到了「信任设置」界面,说明证书已安装,关闭 Safari 直接进入下一步即可。")
+                Text("If Safari says the certificate already exists or opens Trust Settings directly, the certificate is installed. Close Safari and continue to the next step.")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
         case .install:
             VStack(alignment: .leading, spacing: 14) {
-                Text("证书下载完后,请按以下步骤安装:")
+                Text("After the certificate is downloaded, install it using the steps below:")
                     .font(.body)
-                Text("① 打开 iPhone「设置」")
-                Text("② 顶部会出现「已下载描述文件」,点击进入")
-                Text("③ 右上角点「安装」,按提示输入手机密码")
-                Text("④ 安装完成后回到本页面")
+                Text("① Open Settings on your iPhone")
+                Text("② Tap the downloaded profile at the top")
+                Text("③ Tap Install in the top right and follow the prompts")
+                Text("④ Return to this app when finished")
                     .font(.body)
                     .foregroundColor(.blue)
                     .padding(.top, 8)
             }
         case .trust:
             VStack(alignment: .leading, spacing: 14) {
-                Text("证书下载后,需要手动信任:")
+                Text("After downloading, you must manually trust the certificate:")
                     .font(.body)
-                Text("① 打开 iPhone「设置」")
-                Text("② 进入「通用」→「关于本机」")
-                Text("③ 滚到底部找到「证书信任设置」")
-                Text("④ 打开「Location Spoofer CA」开关")
-                Text("⑤ 在弹窗中点「继续」")
-                Text("完成后回到本页面")
+                Text("① Open Settings")
+                Text("② Go to General → About")
+                Text("③ Scroll down to Certificate Trust Settings")
+                Text("④ Enable Location Spoofer CA")
+                Text("⑤ Tap Continue in the prompt")
+                Text("Return to this app when finished")
                     .font(.body)
                     .foregroundColor(.blue)
                     .padding(.top, 8)
@@ -224,7 +224,7 @@ struct FirstSetupView: View {
         switch currentStep {
         case .vpn:
             Button(action: { triggerVPNSetup() }) {
-                Text(isProcessing ? "正在配置..." : "授权 VPN")
+                Text(isProcessing ? "Setting up..." : "Authorize VPN")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -235,7 +235,7 @@ struct FirstSetupView: View {
             .disabled(isProcessing)
         case .cert:
             Button(action: { triggerCertInstall() }) {
-                Text(isProcessing ? "正在跳转..." : "安装证书")
+                Text(isProcessing ? "Opening..." : "Install Certificate")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -246,7 +246,7 @@ struct FirstSetupView: View {
             .disabled(isProcessing)
         case .install:
             Button(action: { showInstallConfirm = true }) {
-                Text("我已安装,下一步")
+                Text("Installed, Next")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -256,7 +256,7 @@ struct FirstSetupView: View {
             }
         case .trust:
             Button(action: { showTrustConfirm = true }) {
-                Text("我已完成信任设置")
+                Text("I have trusted the certificate")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -277,14 +277,14 @@ struct FirstSetupView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 80))
                 .foregroundColor(.green)
-            Text("配置完成!")
+            Text("Setup complete!")
                 .font(.largeTitle).fontWeight(.bold)
-            Text("现在可以一键修改你的定位了")
+            Text("You can now change your location with one tap.")
                 .font(.title3)
                 .foregroundColor(.secondary)
             Spacer()
             Button(action: { completeSetup() }) {
-                Text("开始使用")
+                Text("Start Using")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -313,7 +313,7 @@ struct FirstSetupView: View {
                         startTunnelAndAdvance(manager: manager)
                     case .failure(let error):
                         isProcessing = false
-                        errorMessage = "VPN 配置安装失败:\(error.localizedDescription)"
+                        errorMessage = "VPN configuration installation failed: \(error.localizedDescription)"
                     }
                 }
             }
@@ -330,12 +330,12 @@ struct FirstSetupView: View {
                 if manager.connection.status == .connected {
                     currentStep = .cert
                 } else {
-                    errorMessage = "VPN 连接超时,请重新尝试或检查网络。"
+                    errorMessage = "VPN connection timed out, please try again or check your network."
                 }
             }
         } catch {
             isProcessing = false
-            errorMessage = "VPN 启动失败:\(error.localizedDescription)"
+            errorMessage = "VPN failed to start: \(error.localizedDescription)"
         }
     }
 
@@ -350,7 +350,7 @@ struct FirstSetupView: View {
                     UserDefaults.standard.set(true, forKey: "certDownloaded")
                     currentStep = .install
                 } else {
-                    errorMessage = errMsg ?? "证书安装唤起失败"
+                    errorMessage = errMsg ?? "Failed to launch certificate installation"
                 }
             }
         }
