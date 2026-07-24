@@ -1,10 +1,13 @@
 import SwiftUI
 import NetworkExtension
+import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showResetConfirm = false
     @State private var showCopiedToast = false
+    @State private var isSharePresented = false
+    @State private var shareText = ""
     @ObservedObject private var diagLog = DiagLog.shared
 
     var body: some View {
@@ -41,6 +44,14 @@ struct SettingsView: View {
                             Spacer()
                         }
                         .foregroundColor(showCopiedToast ? .green : .blue)
+                    }
+                    Button(action: { shareDiagnostic() }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share diagnostics")
+                            Spacer()
+                        }
+                        .foregroundColor(.blue)
                     }
                 }
 
@@ -92,6 +103,9 @@ struct SettingsView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .sheet(isPresented: $isSharePresented) {
+                ActivityView(activityItems: [shareText])
             }
             .alert("Confirm app reset?", isPresented: $showResetConfirm) {
                 Button("Cancel", role: .cancel) { }
@@ -163,12 +177,12 @@ struct SettingsView: View {
         UserDefaults.standard.bool(forKey: "firstSetupCompleted") ? "Completed" : "Not completed"
     }
 
-    private func copyDiagnostic() {
+    private func diagnosticText() -> String {
         let logBlock = diagLog.entries.isEmpty
             ? "(No logs)"
             : diagLog.entries.map { $0.formatted }.joined(separator: "\n")
 
-        let info = """
+        return """
         AnyDoor diagnostics
         ─────────────
         App version: \(appVersion)
@@ -182,11 +196,19 @@ struct SettingsView: View {
         ─── Logs ───
         \(logBlock)
         """
-        UIPasteboard.general.string = info
+    }
+
+    private func copyDiagnostic() {
+        UIPasteboard.general.string = diagnosticText()
         showCopiedToast = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             showCopiedToast = false
         }
+    }
+
+    private func shareDiagnostic() {
+        shareText = diagnosticText()
+        isSharePresented = true
     }
 
     /// 通过 IPC 从 Tunnel 拉取 Go 端日志缓冲(handleLocationRequest 的逐次追踪)。
