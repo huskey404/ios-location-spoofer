@@ -3,9 +3,12 @@
 Standalone IOS app to spoof GPS location without jailbreaks. Untethered, local, and open source.
 
 > [!NOTE]
-> Update 2026-01-19: Apple has rejected this app from testflight. You must have an Apple developer account to sideload onto your own device.
+> Fork this repo and run the build action to get an unsigned IPA.
 
 https://github.com/user-attachments/assets/456d508c-2104-4d10-9458-e58e84b74788
+
+
+--- Original README ---
 
 ## How it works
 
